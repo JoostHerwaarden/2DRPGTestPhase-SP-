@@ -26,6 +26,8 @@ public class Player : MonoBehaviour
 
 	private bool jump;
 
+	private bool jumpAttack;
+
 	[SerializeField]
 	private bool aircontrol;
 
@@ -60,11 +62,18 @@ public class Player : MonoBehaviour
 
 		HandleAttacks ();
 
+		HandleLayers ();
+
 		ResetValues ();
 	}
 
 	private void HandleMovement(float horizontal)
 	{
+		if (myRigidBody.velocity.y < 0) 
+		{
+			myAnimator.SetBool ("land", true);
+		}
+
 		if (!this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("PlayerAttack") && (isGrounded || aircontrol))
 		{
 			myRigidBody.velocity = new Vector2 (horizontal * movementSpeed, myRigidBody.velocity.y);
@@ -74,6 +83,7 @@ public class Player : MonoBehaviour
 		{
 			isGrounded = false;
 			myRigidBody.AddForce (new Vector2 (0, jumpForce));
+			myAnimator.SetTrigger ("jump");
 		}
 
 
@@ -82,10 +92,18 @@ public class Player : MonoBehaviour
 
 	private void HandleAttacks()
 	{
-		if (attack && !this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("PlayerAttack")) 
+		if (attack && isGrounded && !this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("PlayerAttack")) 
 		{
 			myAnimator.SetTrigger ("attack");
 			myRigidBody.velocity = Vector2.zero;
+		}
+		if (jumpAttack && !isGrounded && !this.myAnimator.GetCurrentAnimatorStateInfo(1).IsName("JumpAttack")) 
+		{
+			myAnimator.SetBool("jumpAttack", true);
+		}
+		if (!jumpAttack && !this.myAnimator.GetCurrentAnimatorStateInfo(1).IsName("JumpAttack")) 
+		{
+			myAnimator.SetBool("jumpAttack", false);
 		}
 	}
 
@@ -94,6 +112,7 @@ public class Player : MonoBehaviour
 		if (Input.GetKeyDown (KeyCode.LeftControl)) 
 		{
 			attack = true;
+			jumpAttack = true;
 		}
 		if (Input.GetKeyDown (KeyCode.LeftAlt)) 
 		{
@@ -119,6 +138,7 @@ public class Player : MonoBehaviour
 	{
 		attack = false;
 		jump = false;
+		jumpAttack = false;
 	}
 
 	private bool IsGrounded()
@@ -133,11 +153,24 @@ public class Player : MonoBehaviour
 				{
 					if (colliders [i].gameObject != gameObject) 
 					{
+						myAnimator.ResetTrigger ("jump");
+						myAnimator.SetBool ("land", false);
 						return true;
 					}
 				}
 			}
 		}
 		return false;
+	}
+
+	private void HandleLayers()
+	{
+		if (!isGrounded) 
+		{
+			myAnimator.SetLayerWeight (1, 1);
+		} else 
+		{
+			myAnimator.SetLayerWeight (1, 0);
+		}
 	}
 }
