@@ -173,6 +173,11 @@ public class Player : MonoBehaviour
 			myAnimator.SetLayerWeight (1, 0);
 		}
 	}
+<<<<<<< HEAD
+=======
+	//line added to commit (accidentely did it with my old account.......waaa..........)
+
+>>>>>>> 627f58024cc3f5c6f608abf24423129c21308b0a
 }
 
 
