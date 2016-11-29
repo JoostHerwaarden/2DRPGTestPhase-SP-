@@ -45,6 +45,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\AnimationBehaviours\AttackBehaviour.cs" />
+     <Compile Include="Assets\Scripts\AnimationBehaviours\JumpBehaviour.cs" />
+     <Compile Include="Assets\Scripts\AnimationBehaviours\LandBehaviour.cs" />
      <Compile Include="Assets\Scripts\CameraFollow.cs" />
      <Compile Include="Assets\Scripts\CollisionTrigger.cs" />
      <Compile Include="Assets\Scripts\Player.cs" />

@@ -3,13 +3,23 @@ using System.Collections;
 
 public class Player : MonoBehaviour 
 {
-	private Rigidbody2D myRigidBody;
+	private static Player instance;
+
+	public static Player Instance
+	{
+		get 
+		{
+			if (instance == null) 
+			{
+				instance = GameObject.FindObjectOfType<Player>();
+			}
+			return instance;
+		}
+	}
 
 	private Animator myAnimator;
 
 	public float movementSpeed;
-
-	private bool attack;
 
 	private bool facingRight;
 
@@ -22,25 +32,25 @@ public class Player : MonoBehaviour
 	[SerializeField]
 	private LayerMask WhatIsGround;
 
-	private bool isGrounded;
-
-	private bool jump;
-
-	private bool jumpAttack;
-
 	[SerializeField]
 	private bool aircontrol;
 
 	[SerializeField]
 	private float jumpForce;
 
+	public Rigidbody2D MyRigibody { get; set; }
 
+	public bool Attack { get; set; }
+
+	public bool Jump { get; set; }
+
+	public bool OnGround { get; set; }
 
 	// Use this for initialization
 	void Start () 
 	{
 		facingRight = false;
-		myRigidBody = GetComponent<Rigidbody2D> ();
+		MyRigibody = GetComponent<Rigidbody2D> ();
 		myAnimator = GetComponent<Animator> ();
 	}
 
@@ -54,69 +64,42 @@ public class Player : MonoBehaviour
 	{
 		float horizontal = Input.GetAxis ("Horizontal");
 
-		isGrounded = IsGrounded ();
+		OnGround = IsGrounded ();
 
 		HandleMovement(horizontal);
 
 		Flip (horizontal);
 
-		HandleAttacks ();
-
 		HandleLayers ();
-
-		ResetValues ();
 	}
 
 	private void HandleMovement(float horizontal)
 	{
-		if (myRigidBody.velocity.y < 0) 
+		if (MyRigibody.velocity.y < 0) 
 		{
 			myAnimator.SetBool ("land", true);
 		}
-
-		if (!this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("PlayerAttack") && (isGrounded || aircontrol))
+		if (!Attack && (OnGround || aircontrol)) 
 		{
-			myRigidBody.velocity = new Vector2 (horizontal * movementSpeed, myRigidBody.velocity.y);
+			MyRigibody.velocity = new Vector2 (horizontal * movementSpeed, MyRigibody.velocity.y);
+		}
+		if (Jump && MyRigibody.velocity.y == 0) 
+		{
+			MyRigibody.AddForce(new Vector2 (0, jumpForce));
 		}
 
-		if (isGrounded && jump) 
-		{
-			isGrounded = false;
-			myRigidBody.AddForce (new Vector2 (0, jumpForce));
-			myAnimator.SetTrigger ("jump");
-		}
-
-
-		myAnimator.SetFloat ("speed", Mathf.Abs(horizontal));
-	}
-
-	private void HandleAttacks()
-	{
-		if (attack && isGrounded && !this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("PlayerAttack")) 
-		{
-			myAnimator.SetTrigger ("attack");
-			myRigidBody.velocity = Vector2.zero;
-		}
-		if (jumpAttack && !isGrounded && !this.myAnimator.GetCurrentAnimatorStateInfo(1).IsName("JumpAttack")) 
-		{
-			myAnimator.SetBool("jumpAttack", true);
-		}
-		if (!jumpAttack && !this.myAnimator.GetCurrentAnimatorStateInfo(1).IsName("JumpAttack")) 
-		{
-			myAnimator.SetBool("jumpAttack", false);
-		}
+		myAnimator.SetFloat("speed", Mathf.Abs (horizontal));
 	}
 
 	private void HandleInput()
 	{
 		if (Input.GetKeyDown (KeyCode.LeftControl)) 
 		{
-			attack = true;
-			jumpAttack = true;
+			myAnimator.SetTrigger("attack");
 		}
 		if (Input.GetKeyDown (KeyCode.LeftAlt)) 
 		{
-			jump = true;
+			myAnimator.SetTrigger("jump");
 		}
 	}
 
@@ -134,16 +117,9 @@ public class Player : MonoBehaviour
 		}
 	}
 
-	private void ResetValues()
-	{
-		attack = false;
-		jump = false;
-		jumpAttack = false;
-	}
-
 	private bool IsGrounded()
 	{
-		if (myRigidBody.velocity.y <= 0) 
+		if (MyRigibody.velocity.y <= 1) 
 		{
 			foreach (Transform point in groundPoints) 
 			{
@@ -153,8 +129,6 @@ public class Player : MonoBehaviour
 				{
 					if (colliders [i].gameObject != gameObject) 
 					{
-						myAnimator.ResetTrigger ("jump");
-						myAnimator.SetBool ("land", false);
 						return true;
 					}
 				}
@@ -165,7 +139,7 @@ public class Player : MonoBehaviour
 
 	private void HandleLayers()
 	{
-		if (!isGrounded) 
+		if (!OnGround) 
 		{
 			myAnimator.SetLayerWeight (1, 1);
 		} else 
@@ -173,11 +147,4 @@ public class Player : MonoBehaviour
 			myAnimator.SetLayerWeight (1, 0);
 		}
 	}
-<<<<<<< HEAD
-=======
-	//line added to commit (accidentely did it with my old account.......waaa..........)
-
->>>>>>> 627f58024cc3f5c6f608abf24423129c21308b0a
 }
-
-
